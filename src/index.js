@@ -21,7 +21,7 @@ import {
   failingContractBytecode,
 } from './constants.json';
 
-let registryContract;
+let DidContract;
 let ethersProvider;
 let hstFactory;
 let piggybankFactory;
@@ -164,7 +164,7 @@ const initialize = async () => {
   try {
     // We must specify the network as 'any' for ethers to allow network changes
     ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-    registryContract = new ethers.Contract(
+    DidContract = new ethers.Contract(
       '0x489aCA60625A66257d59A2708b992E3a249740b3',
       registryABI,
       ethersProvider.getSigner(),
@@ -1406,12 +1406,12 @@ const initialize = async () => {
   }
 
   // Call registry
-  const callRegistryBtn = document.getElementById('callRegistryBtn');
-  callRegistryBtn.onclick = async () => {
+  const registerBtn = document.getElementById('registerBtn');
+  registerBtn.onclick = async () => {
     const ownerAddr = document.getElementById('addr').value;
     const name = document.getElementById('name').value;
     // const ret = await instance.methods.register(ownerAddr, name).send({from: signer});
-    const result = await registryContract.register(ownerAddr, name, {
+    const result = await DidContract.register(ownerAddr, name, {
       from: accounts[0],
       // value: '',
     });
