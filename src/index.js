@@ -10,6 +10,7 @@ import {
 import { ethers } from 'ethers';
 import { toChecksumAddress } from 'ethereumjs-util';
 import {
+  registry2ABI,
   registryABI,
   hstBytecode,
   hstAbi,
@@ -21,6 +22,7 @@ import {
   failingContractBytecode,
 } from './constants.json';
 
+let DidContract2;
 let DidContract;
 let ethersProvider;
 let hstFactory;
@@ -164,9 +166,17 @@ const initialize = async () => {
   try {
     // We must specify the network as 'any' for ethers to allow network changes
     ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+    const registryAddr = '0x489aCA60625A66257d59A2708b992E3a249740b3';
+    const registry2Addr = '0x9955E743f64FbA8e1EF308B3b6EA9C5555928f42';
     DidContract = new ethers.Contract(
-      '0x489aCA60625A66257d59A2708b992E3a249740b3',
+      registryAddr,
       registryABI,
+      ethersProvider.getSigner(),
+    );
+
+    DidContract2 = new ethers.Contract(
+      registry2Addr,
+      registry2ABI,
       ethersProvider.getSigner(),
     );
     if (deployedContractAddress) {
@@ -1422,6 +1432,27 @@ const initialize = async () => {
     a.innerText = '点击查看交易';
     a.href = `https://ropsten.etherscan.io/tx/${receipt.transactionHash}`;
 
+    console.log('Call the register function return -> ', receipt);
+  };
+
+  // Call registry2 payable
+  const register2Btn = document.getElementById('registerBtn2');
+  register2Btn.onclick = async () => {
+    const ownerAddr = document.getElementById('addr2').value;
+    const name = document.getElementById('name2').value;
+    const cost = await DidContract2.getCost(name);
+    const sendValue = ethers.utils.formatEther(cost.toString());
+    console.log('SendValue: %s ETH', sendValue);
+    const result = await DidContract2.register(ownerAddr, name, {
+      from: accounts[0],
+      value: ethers.utils.parseEther(sendValue.toString()),
+    });
+    console.log(result);
+    const receipt = await result.wait();
+    console.log(receipt);
+    const a = document.getElementById('view2');
+    a.innerText = '点击查看交易';
+    a.href = `https://ropsten.etherscan.io/tx/${receipt.transactionHash}`;
     console.log('Call the register function return -> ', receipt);
   };
 };
